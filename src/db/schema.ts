@@ -1,6 +1,7 @@
 export type DatabaseSchema = {
   post: Post
   sub_state: SubState
+  user: User
 }
 
 export type Post = {
@@ -12,4 +13,10 @@ export type Post = {
 export type SubState = {
   service: string
   cursor: number
+}
+
+export type User = {
+  id: string
+  normal: number
+  lastUpdatedAt: string
 }

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import FeedGenerator from './server'
+import { UserUpdater } from './user-updater'
 
 const run = async () => {
   dotenv.config()
@@ -21,6 +22,8 @@ const run = async () => {
     serviceDid,
   })
   await server.start()
+  const userUpdater = new UserUpdater(server.db);
+  userUpdater.start();
   console.log(
     `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
   )
