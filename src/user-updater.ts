@@ -32,6 +32,12 @@ export class UserUpdater {
     });
     return response.data.feed;
   }
+  async getUserIsNormal(id: string) {
+    return await this.db
+      .selectFrom('user').select(['normal'])
+      .where('id', '=', id)
+      .execute()[0]?.normal === 1
+  }
   async updateUser(user) {
     const response = await agent.getProfile({ actor: user.id});
     let isNormal = false;
@@ -49,8 +55,14 @@ export class UserUpdater {
       await this.writeUserUpdate(user.id, false);
       return;
     }
-    await this.writeUserUpdate(user.id, true);
-    console.log("updated", response.data.handle!, " to normal");
+    if (await this.getUserIsNormal(user.id)) {
+      await this.writeUserUpdate(user.id, true);
+      return;
+    } else {
+      console.log("updating", response.data.handle!, " to normal");
+      await this.writeUserUpdate(user.id, true);
+      await this.addPosts(posts);
+    }
   }
   async getUserToExamine() {
     const users = await this.db.selectFrom("user")
@@ -64,6 +76,19 @@ export class UserUpdater {
     else {
       return users[0];
     }
+  }
+  async addPosts(posts) {
+    posts.forEach(async (post) => {
+      await this.db.insertInto("post")
+        .values({
+          uri: post.post.uri,
+          cid: post.post.cid,
+          indexedAt: new Date(Date.parse(post.post.indexedAt)).toISOString(),
+        })
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    });
+    
   }
   async loop() {
     try {
