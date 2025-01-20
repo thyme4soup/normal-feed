@@ -45,6 +45,11 @@ export class UserUpdater {
       console.log("profile not found");
       return;
     }
+    const createdAt = Date.parse(response.data.createdAt!);
+    if (createdAt > new Date().getTime() - 1000 * 60 * 60 * 24 * 7) {
+      await this.writeUserUpdate(user.id, false);
+      return;
+    }
     if (response.data.followersCount! > 1000) {
       await this.writeUserUpdate(user.id, false);
       return;
