@@ -1,9 +1,12 @@
 import dotenv from 'dotenv'
 import FeedGenerator from './server'
 import { UserUpdater } from './user-updater'
+import * as jetstream from './util/jetstream'
+import { createDb, migrateToLatest } from './db'
 
 const run = async () => {
   dotenv.config()
+  /*
   const hostname = maybeStr(process.env.FEEDGEN_HOSTNAME) ?? 'example.com'
   const serviceDid =
     maybeStr(process.env.FEEDGEN_SERVICE_DID) ?? `did:web:${hostname}`
@@ -21,12 +24,21 @@ const run = async () => {
     hostname,
     serviceDid,
   })
-  await server.start()
-  const userUpdater = new UserUpdater(server.db);
+  */
+  const db = createDb(':memory:');
+  migrateToLatest(db);
+  await jetstream.start(db);
+  const userUpdater = new UserUpdater(db);
   userUpdater.start();
-  console.log(
-    `🤖 running feed generator at http://${server.cfg.listenhost}:${server.cfg.port}`,
-  )
+  const server = FeedGenerator.create({
+    port: 3000,
+    listenhost: 'localhost',
+    publisherDid: 'did:example:alice',
+    subscriptionReconnectDelay: 3000,
+    hostname: 'example.com',
+    serviceDid: 'did:web:example.com',
+  }, db);
+  await server.start();
 }
 
 const maybeStr = (val?: string) => {

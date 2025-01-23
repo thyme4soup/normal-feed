@@ -1243,6 +1243,11 @@ node-abi@^3.3.0:
   dependencies:
     semver "^7.3.5"
 
+node-addon-api@^7.0.0:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-7.1.1.tgz#1aba6693b0f255258a049d621329329322aad558"
+  integrity sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==
+
 node-gyp-build-optional-packages@5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/node-gyp-build-optional-packages/-/node-gyp-build-optional-packages-5.1.1.tgz#52b143b9dd77b7669073cbfe39e3f4118bfc603c"
@@ -1756,3 +1761,12 @@ zod@^3.21.4, zod@^3.23.8:
   version "3.23.8"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
   integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==
+
+zstd-napi@0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/zstd-napi/-/zstd-napi-0.0.8.tgz#a6f41231d637cd24d663e40fcd72499959c176df"
+  integrity sha512-qWkNMy5kQGfZrISvlfuuX5QZTS4zQG+sc/F09b7+c0PVqGr7Sp9bR4ir0H18SI+Ftq6louMbGLVnmjEqAdTAVQ==
+  dependencies:
+    "@types/node" "*"
+    node-addon-api "^7.0.0"
+    prebuild-install "^7.1.1"

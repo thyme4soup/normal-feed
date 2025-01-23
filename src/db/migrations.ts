@@ -26,6 +26,7 @@ migrations['001'] = {
       .addColumn('id', 'varchar', (col) => col.primaryKey())
       .addColumn('normal', 'integer', (col) => col.notNull())
       .addColumn('lastUpdatedAt', 'varchar', (col) => col.notNull())
+      .addColumn('lastActiveAt', 'varchar', (col) => col.notNull())
       .execute()
   },
   async down(db: Kysely<unknown>) {

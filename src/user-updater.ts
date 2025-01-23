@@ -18,10 +18,12 @@ export class UserUpdater {
       id: userId,
       normal: isNormal? 1 : 0,
       lastUpdatedAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
     })
     .onConflict((oc) => oc.doUpdateSet({
       normal: isNormal? 1 : 0,
       lastUpdatedAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
     }))
     .execute();
   }
@@ -39,7 +41,13 @@ export class UserUpdater {
       .execute()[0]?.normal === 1
   }
   async updateUser(user) {
-    const response = await agent.getProfile({ actor: user.id});
+    let response;
+    try {
+      response = await agent.getProfile({ actor: user.id});
+    } catch (e) {
+      console.error(e);
+      await this.writeUserUpdate(user.id, false);
+    }
     let isNormal = false;
     if (response === undefined) {
       console.log("profile not found");
@@ -55,6 +63,11 @@ export class UserUpdater {
       return;
     }
     const posts = await this.getUserPosts(response.data.handle!) as any[];
+    if (posts === undefined || posts.length === 0) {
+      console.log("no posts found for", response.data.handle!);
+      await this.writeUserUpdate(user.id, false);
+      return;
+    }
     const oldPostAt = Date.parse(posts[posts.length - 1].post.indexedAt!);
     if (posts.length >= 50 && oldPostAt > new Date().getTime() - 1000 * 60 * 60 * 24 * 30) {
       await this.writeUserUpdate(user.id, false);
@@ -64,7 +77,7 @@ export class UserUpdater {
       await this.writeUserUpdate(user.id, true);
       return;
     } else {
-      console.log("updating", response.data.handle!, " to normal");
+      console.log("updating", response.data.handle!, "to normal");
       await this.writeUserUpdate(user.id, true);
       await this.addPosts(posts);
     }
@@ -93,9 +106,17 @@ export class UserUpdater {
         .onConflict((oc) => oc.doNothing())
         .execute();
     });
-    
   }
-  async loop() {
+  async reapPosts() {
+    await this.db.deleteFrom("post")
+      .where("indexedAt", "<", `${new Date().getTime() - 1000 * 60 * 60 * 24 * 2}`)
+      .execute();
+  }
+  async reapUsers() {
+    await this.db.deleteFrom("user")
+      .where("lastActiveAt", "<", `${new Date().getTime() - 1000 * 60 * 60 * 24 * 30}`)
+  }
+  async userMonitorLoop() {
     try {
       const user = await this.getUserToExamine();
       await this.updateUser(user);
@@ -103,13 +124,34 @@ export class UserUpdater {
       console.error(e);
     }
     setTimeout(async () => {
-      await this.loop();
+      await this.userMonitorLoop();
+    }, 1000);
+  }
+  async postReaperLoop() {
+    try {
+      await this.reapPosts();
+    } catch (e) {
+      console.error(e);
+    }
+    setTimeout(async () => {
+      await this.postReaperLoop();
+    }, 1000);
+  }
+  async userReaperLoop() {
+    try {
+    } catch (e) {
+      console.error(e);
+    }
+    setTimeout(async () => {
+      await this.userReaperLoop();
     }, 1000);
   }
 
   async start(): Promise<void> {
     setTimeout(async () => {
-      await this.loop();
+      await this.userMonitorLoop();
+      await this.postReaperLoop();
+      await this.userReaperLoop();
     }, 1000);
     return Promise.resolve();
   }

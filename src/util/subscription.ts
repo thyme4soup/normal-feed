@@ -17,6 +17,7 @@ export abstract class FirehoseSubscriptionBase {
   public sub: Subscription<RepoEvent>
 
   constructor(public db: Database, public service: string) {
+    console.log("service", service);
     this.sub = new Subscription({
       service: service,
       method: ids.ComAtprotoSyncSubscribeRepos,

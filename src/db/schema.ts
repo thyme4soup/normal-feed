@@ -19,4 +19,5 @@ export type User = {
   id: string
   normal: number
   lastUpdatedAt: string
+  lastActiveAt: string
 }
