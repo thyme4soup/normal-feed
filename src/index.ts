@@ -25,18 +25,19 @@ const run = async () => {
     serviceDid,
   })
   */
-  const db = createDb(':memory:');
+  const db = createDb(maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? ':memory:');
   migrateToLatest(db);
   await jetstream.start(db);
   const userUpdater = new UserUpdater(db);
   userUpdater.start();
+  const hostname = maybeStr(process.env.FEEDGEN_HOSTNAME) ?? 'example.com'
   const server = FeedGenerator.create({
-    port: 3000,
-    listenhost: 'localhost',
-    publisherDid: 'did:example:alice',
+    port: maybeInt(process.env.FEEDGEN_PORT) ?? 3000,
+    listenhost: maybeStr(process.env.FEEDGEN_LISTENHOST) ?? 'localhost',
+    publisherDid: maybeStr(process.env.FEEDGEN_PUBLISHER_DID) ?? 'did:example:alice',
     subscriptionReconnectDelay: 3000,
-    hostname: 'example.com',
-    serviceDid: 'did:web:example.com',
+    hostname: maybeStr(process.env.FEEDGEN_HOSTNAME) ?? 'example.com',
+    serviceDid: maybeStr(process.env.FEEDGEN_SERVICE_DID) ?? `did:web:${hostname}`,
   }, db);
   await server.start();
 }
