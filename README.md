@@ -61,6 +61,8 @@ Install dependencies with `yarn` and then run the server with `yarn start`. This
 
 http://localhost:3000/xrpc/app.bsky.feed.getFeedSkeleton?feed=at://did:plc:wfg5nju5wyqyeoap7xlghcow/app.bsky.feed.generator/normals-only
 
+https://normals-only.souphub.io/xrpc/app.bsky.feed.getFeedSkeleton?feed=at://did:plc:wfg5nju5wyqyeoap7xlghcow/app.bsky.feed.generator/normals-only
+
 ## Some Details
 
 ### Skeleton Metadata

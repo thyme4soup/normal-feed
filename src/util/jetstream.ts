@@ -15,7 +15,20 @@ const onopen = function () {
 const onmessage = (db) => async function (event) {
     event = decompress.decompress(new Uint8Array(event.data));
     let eventJSON = JSON.parse(event);
+    //console.log(eventJSON);
     try {
+        if (eventJSON.kind !== "commit") {
+            // skip non-commit events
+            return;
+        }
+        if (eventJSON.commit.operation !== "create") {
+            // skip non-create events
+            return;
+        }
+        if (eventJSON.commit.record.reply !== undefined) {
+            // skip reply events
+            return;
+        }
         await registerUserIfNotExists(db, eventJSON.did);
         if(await getUserIsNormal(db, eventJSON.did)) {
             await db
@@ -29,6 +42,7 @@ const onmessage = (db) => async function (event) {
                 .execute()
         }
     } catch (e) {
+        console.log("Error processing event", eventJSON);
         console.error(e);
     }
 };

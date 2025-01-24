@@ -30,7 +30,7 @@ export class UserUpdater {
   async getUserPosts(userAt) {
     const response = await agent.getAuthorFeed({
       actor: userAt,
-      limit: 50,
+      limit: 10,
     });
     return response.data.feed;
   }
@@ -69,7 +69,7 @@ export class UserUpdater {
       return;
     }
     const oldPostAt = Date.parse(posts[posts.length - 1].post.indexedAt!);
-    if (posts.length >= 50 && oldPostAt > new Date().getTime() - 1000 * 60 * 60 * 24 * 30) {
+    if (posts.length >= 10 && oldPostAt > new Date().getTime() - 1000 * 60 * 60 * 24 * 10) {
       await this.writeUserUpdate(user.id, false);
       return;
     }
@@ -97,6 +97,10 @@ export class UserUpdater {
   }
   async addPosts(posts) {
     posts.forEach(async (post) => {
+      if (post.reply !== undefined) {
+        // skip reply events
+        return;
+      }
       await this.db.insertInto("post")
         .values({
           uri: post.post.uri,
