@@ -30,6 +30,7 @@ export class UserUpdater {
   async getUserPosts(userAt) {
     const response = await agent.getAuthorFeed({
       actor: userAt,
+      filter: "posts_no_replies",
       limit: 10,
     });
     return response.data.feed;
@@ -69,7 +70,9 @@ export class UserUpdater {
       return;
     }
     const oldPostAt = Date.parse(posts[posts.length - 1].post.indexedAt!);
+    console.log("old post at", oldPostAt, "with", posts.length, "posts");
     if (posts.length >= 10 && oldPostAt > new Date().getTime() - 1000 * 60 * 60 * 24 * 10) {
+      console.log(response.data.handle!, "posts too much");
       await this.writeUserUpdate(user.id, false);
       return;
     }
@@ -97,8 +100,8 @@ export class UserUpdater {
   }
   async addPosts(posts) {
     posts.forEach(async (post) => {
-      if (post.reply !== undefined) {
-        // skip reply events
+      if (post.reason !== undefined) {
+        // skip repost events
         return;
       }
       await this.db.insertInto("post")
@@ -113,7 +116,7 @@ export class UserUpdater {
   }
   async reapPosts() {
     await this.db.deleteFrom("post")
-      .where("indexedAt", "<", `${new Date().getTime() - 1000 * 60 * 60 * 24 * 10}`)
+      .where("indexedAt", "<", `${new Date().getTime() - 1000 * 60 * 60 * 24 * 2}`)
       .execute();
   }
   async reapUsers() {
