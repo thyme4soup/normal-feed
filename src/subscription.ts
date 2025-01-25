@@ -61,7 +61,7 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
   async registerUserIfNotExists(id: string) {
     await this.db
       .insertInto('user')
-      .values([{ id, normal: 0, lastUpdatedAt: new Date().toISOString() }])
+      .values([{ id, normal: 0, lastUpdatedAt: new Date().toISOString(), lastActiveAt: new Date().toISOString() }])
       .onConflict((oc) => oc.doNothing())
       .execute()
   }
