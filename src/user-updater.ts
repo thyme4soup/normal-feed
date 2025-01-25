@@ -113,7 +113,7 @@ export class UserUpdater {
   }
   async reapPosts() {
     await this.db.deleteFrom("post")
-      .where("indexedAt", "<", `${new Date().getTime() - 1000 * 60 * 60 * 24 * 2}`)
+      .where("indexedAt", "<", `${new Date().getTime() - 1000 * 60 * 60 * 24 * 10}`)
       .execute();
   }
   async reapUsers() {

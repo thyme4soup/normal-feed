@@ -27,6 +27,15 @@ const run = async () => {
   */
   const db = createDb(maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? ':memory:');
   migrateToLatest(db);
+  const numPosts = await db
+    .selectFrom('post')
+    .select(db.fn.countAll().as('count'))
+    .executeTakeFirstOrThrow();
+  const numUsers = await db
+    .selectFrom('user')
+    .select(db.fn.countAll().as('count'))
+    .executeTakeFirstOrThrow();
+  console.log('Booting up with', numPosts.count, 'posts and', numUsers.count, 'users');
   await jetstream.start(db);
   const userUpdater = new UserUpdater(db);
   userUpdater.start();
