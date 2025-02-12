@@ -1,6 +1,5 @@
 import { Database } from './db'
 import { AtpAgent } from "@atproto/api";
-import { privateEncrypt } from 'crypto';
 
 export const agent = new AtpAgent({
   service: "https://api.bsky.app",
@@ -11,6 +10,11 @@ export class UserUpdater {
 
   constructor(db: Database) {
     this.db = db
+  }
+  async removeUser(id: string) {
+    await this.db.deleteFrom("user")
+      .where("id", "=", id)
+      .execute();
   }
   async writeUserUpdate(userId, isNormal) {
     await this.db.insertInto("user")
@@ -47,11 +51,17 @@ export class UserUpdater {
       response = await agent.getProfile({ actor: user.id});
     } catch (e) {
       console.error(e);
-      await this.writeUserUpdate(user.id, false);
+      if (e instanceof Error && e.message.includes("Profile not found")) {
+        console.log("Profile is missing, removing user", user.id);
+        await this.removeUser(user.id);
+        return;
+      } else {
+        await this.writeUserUpdate(user.id, false);
+      }
     }
     let isNormal = false;
     if (response === undefined) {
-      console.log("profile not found");
+      console.log("Profile not found, not-normal until proved innocent");
       return;
     }
     const createdAt = Date.parse(response.data.createdAt!);
